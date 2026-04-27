@@ -1,0 +1,23 @@
+{
+  "cxxNamespace": ["fastjson"],
+  "ios": {
+    "iosModuleName": "FastJson"
+  },
+  "android": {
+    "androidNamespace": ["fastjson"],
+    "androidCxxLibName": "fastjson"
+  },
+  "autolinking": {
+    "FastJson": {
+      "ios": {
+        "language": "swift",
+        "implementationClassName": "FastJson"
+      },
+      "android": {
+        "language": "kotlin",
+        "implementationClassName": "FastJson"
+      }
+    }
+  },
+  "ignorePaths": ["node_modules"]
+}
