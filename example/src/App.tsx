@@ -1,12 +1,17 @@
+import { useEffect } from 'react';
 import { Text, View, StyleSheet } from 'react-native';
-import { multiply } from 'react-native-fast-json';
-
-const result = multiply(3, 7);
+import { fastJson } from 'react-native-fast-json';
 
 export default function App() {
+  useEffect(() => {
+    fastJson.parse('{ "name": "John", "age": 30 }').then((result) => {
+      console.log(result?.getValue('name'));
+    });
+  }, []);
+
   return (
     <View style={styles.container}>
-      <Text>Result: {result}</Text>
+      <Text>Result</Text>
     </View>
   );
 }

@@ -10,14 +10,20 @@ Pod::Spec.new do |s|
   s.license      = package["license"]
   s.authors      = package["author"]
 
-  s.platforms    = { :ios => min_ios_version_supported }
+  # Align with Swift CxxStdlib / Nitro toolchains (iOS 16+).
+  s.platforms    = { :ios => '16.0' }
   s.source       = { :git => "https://github.com/ifeoluwak/react-native-fast-json.git", :tag => "#{s.version}" }
 
   s.source_files = [
     "ios/**/*.{swift}",
     "ios/**/*.{m,mm}",
-    "cpp/**/*.{hpp,cpp}",
+    # .h: simdjson amalgamation header in cpp/third_party
+    "cpp/**/*.{h,hpp,cpp}",
   ]
+
+  s.pod_target_xcconfig = {
+    "HEADER_SEARCH_PATHS" => "\"$(PODS_TARGET_SRCROOT)/cpp\" \"$(PODS_TARGET_SRCROOT)/cpp/third_party\" $(inherited)",
+  }
 
   s.dependency 'React-jsi'
   s.dependency 'React-callinvoker'

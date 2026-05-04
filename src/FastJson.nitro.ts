@@ -1,8 +1,30 @@
-import type { HybridObject } from 'react-native-nitro-modules';
+import type { AnyMap, HybridObject } from 'react-native-nitro-modules';
+
+interface JsonView extends HybridObject<{
+  ios: 'c++';
+  android: 'c++';
+}> {
+  toJson(): AnyMap;
+  toBuffer(): ArrayBuffer;
+  getValue(key: string): JsonView | null;
+  keys(): string[];
+  has(key: string): boolean;
+  at(index: number): JsonView | null;
+  type: AnyMap;
+  length: number;
+  asString(): string;
+  asNumber(): number;
+  asBoolean(): boolean;
+}
+
+type JsonSourceUri = {
+  uri: string;
+};
+type JsonSource = string | JsonSourceUri;
 
 export interface FastJson extends HybridObject<{
-  ios: 'swift';
-  android: 'kotlin';
+  ios: 'c++';
+  android: 'c++';
 }> {
-  multiply(a: number, b: number): number;
+  parse(source: JsonSource): Promise<JsonView | null>;
 }

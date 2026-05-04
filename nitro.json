@@ -9,13 +9,9 @@
   },
   "autolinking": {
     "FastJson": {
-      "ios": {
-        "language": "swift",
-        "implementationClassName": "FastJson"
-      },
-      "android": {
-        "language": "kotlin",
-        "implementationClassName": "FastJson"
+      "all": {
+        "language": "c++",
+        "implementationClassName": "HybridFastJson"
       }
     }
   },
