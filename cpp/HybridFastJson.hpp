@@ -3,15 +3,15 @@
 #include "HybridFastJsonSpec.hpp"
 #include "HybridJsonViewSpec.hpp"
 
-namespace margelo::nitro::fastjson
-{
-    using JsonPromise = Promise<std::variant<nitro::NullType, std::shared_ptr<HybridJsonViewSpec>>>;
+namespace margelo::nitro::fastjson {
 
-    class HybridFastJson : public HybridFastJsonSpec
-    {
-    public:
-        HybridFastJson();
+using ParseResult = std::variant<nitro::NullType, std::shared_ptr<HybridJsonViewSpec>>;
 
-        std::shared_ptr<JsonPromise> parse(const std::variant<std::string, JsonSourceUri>& source) override;
-    };
-}
+class HybridFastJson : public HybridFastJsonSpec {
+public:
+  HybridFastJson();
+
+  std::shared_ptr<Promise<ParseResult>> parse(const std::variant<std::string, JsonSourceUri>& source) override;
+};
+
+} // namespace margelo::nitro::fastjson

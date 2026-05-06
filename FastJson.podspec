@@ -21,7 +21,13 @@ Pod::Spec.new do |s|
     "cpp/**/*.{h,hpp,cpp}",
   ]
 
+
+  # Force O3 optimization specifically for C++ files
+  s.compiler_flags = '-O3 -DNDEBUG'
+
   s.pod_target_xcconfig = {
+    'GCC_OPTIMIZATION_LEVEL' => '3',
+    'OTHER_CPLUSPLUSFLAGS' => '-O3 -DNDEBUG',
     "HEADER_SEARCH_PATHS" => "\"$(PODS_TARGET_SRCROOT)/cpp\" \"$(PODS_TARGET_SRCROOT)/cpp/third_party\" $(inherited)",
   }
 

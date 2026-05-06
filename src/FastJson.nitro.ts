@@ -1,16 +1,18 @@
-import type { AnyMap, HybridObject } from 'react-native-nitro-modules';
+import type { HybridObject } from 'react-native-nitro-modules';
 
 interface JsonView extends HybridObject<{
   ios: 'c++';
   android: 'c++';
 }> {
-  toJson(): AnyMap;
+  rawJson(): string;
   toBuffer(): ArrayBuffer;
   getValue(key: string): JsonView | null;
   keys(): string[];
   has(key: string): boolean;
   at(index: number): JsonView | null;
-  type: AnyMap;
+  atPath(path: string /* key1[2].key2/key3[0] */): JsonView | null;
+  atPathWithWildcard(path: string /* $.key1[*].key2[1] */): string[] | null;
+  type: string;
   length: number;
   asString(): string;
   asNumber(): number;

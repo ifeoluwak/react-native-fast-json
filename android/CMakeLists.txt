@@ -11,6 +11,8 @@ add_library(
         SHARED
         src/main/cpp/cpp-adapter.cpp
         ../cpp/third_party/simdjson.cpp
+        ../cpp/HybridJsonView.cpp
+        ../cpp/HybridFastJson.cpp
 )
 
 # Add Nitrogen specs :)

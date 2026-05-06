@@ -1,34 +1,40 @@
 #pragma once
 
 #include "HybridJsonViewSpec.hpp"
-#include <NitroModules/ArrayBuffer.hpp>
+#include <simdjson.h>
 
-namespace margelo::nitro::fastjson
-{
-    using JsonViewToJson = std::function<std::shared_ptr<Promise<std::shared_ptr<AnyMap>>>()>;
-    using JsonViewToBuffer = std::function<std::shared_ptr<Promise<std::shared_ptr<margelo::nitro::ArrayBuffer>>>()>;
-    using JsonViewGet = std::function<std::shared_ptr<Promise<std::variant<nitro::NullType, std::shared_ptr<HybridJsonViewSpec>>>>(const std::string& /* key */)>;
-    using JsonViewKeys = std::function<std::shared_ptr<Promise<std::vector<std::string>>>()>;
-    using JsonViewHas = std::function<std::shared_ptr<Promise<bool>>(const std::string& /* key */)>;
-    using JsonViewAt = std::function<std::shared_ptr<Promise<std::variant<nitro::NullType, std::shared_ptr<HybridJsonViewSpec>>>>(double /* index */)>;
-    using JsonViewType = std::shared_ptr<AnyMap>;
-    using JsonViewAsString = std::function<std::shared_ptr<Promise<std::string>>()>;
-    using JsonViewAsNumber = std::function<std::shared_ptr<Promise<double>>()>;
-    using JsonViewAsBoolean = std::function<std::shared_ptr<Promise<bool>>()>;
+namespace margelo::nitro::fastjson {
 
-    class HybridJsonView : public HybridJsonViewSpec
-    {
-    public:
-        HybridJsonView();
+class HybridJsonView : public HybridJsonViewSpec {
+public:
+  HybridJsonView();
+  HybridJsonView(const simdjson::ondemand::object& object);
 
-        std::shared_ptr<AnyMap> toJson() override;
-        std::shared_ptr<margelo::nitro::ArrayBuffer> toBuffer() override;
-        std::variant<nitro::NullType, std::shared_ptr<HybridJsonViewSpec>> getValue(const std::string& key) override;
-        std::vector<std::string> keys() override;
-        bool has(const std::string& key) override;
-        std::variant<nitro::NullType, std::shared_ptr<HybridJsonViewSpec>> at(double index) override;
-        std::string asString() override;
-        double asNumber() override;
-        bool asBoolean() override;
-    };
-}
+  std::string getType() override;
+  void setType(const std::string& type) override;
+  double getLength() override;
+  void setLength(double length) override;
+
+  std::string rawJson() override;
+  std::shared_ptr<ArrayBuffer> toBuffer() override;
+  std::variant<nitro::NullType, std::shared_ptr<HybridJsonViewSpec>> getValue(const std::string& key) override;
+  std::vector<std::string> keys() override;
+  bool has(const std::string& key) override;
+  std::variant<nitro::NullType, std::shared_ptr<HybridJsonViewSpec>> at(double index) override;
+  std::variant<nitro::NullType, std::shared_ptr<HybridJsonViewSpec>> atPath(const std::string& path) override;
+  std::variant<nitro::NullType, std::vector<std::string>> atPathWithWildcard(const std::string& path) override;
+  std::string asString() override;
+  double asNumber() override;
+  bool asBoolean() override;
+
+  simdjson::padded_string pstr;
+  simdjson::ondemand::parser parser;
+  simdjson::ondemand::document doc;
+  simdjson::ondemand::object obj;
+
+private:
+  std::string _type;
+  double _length = 0;
+};
+
+} // namespace margelo::nitro::fastjson
