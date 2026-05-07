@@ -28,7 +28,7 @@ public:
   bool asBoolean() override;
 
   simdjson::padded_string pstr;
-  simdjson::ondemand::parser parser;
+  // simdjson::ondemand::parser parser;
   simdjson::ondemand::document doc;
   simdjson::ondemand::object obj;
 

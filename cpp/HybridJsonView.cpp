@@ -11,6 +11,8 @@ namespace margelo::nitro::fastjson {
 
   std::unordered_map<std::string, JsonCacheVariants> jsonViews;
 
+  simdjson::ondemand::parser parser = simdjson::ondemand::parser();
+
   // struct JsonParseContext {
   //   simdjson::padded_string pstr;
   //   simdjson::ondemand::parser parser;
@@ -46,7 +48,6 @@ namespace margelo::nitro::fastjson {
   // static JsonParseContext& instance;
 
 HybridJsonView::HybridJsonView() : HybridObject(TAG) {
-  parser = simdjson::ondemand::parser();
   std::cout << "HybridJsonView constructor" << std::endl;
 }
 
@@ -94,6 +95,13 @@ std::shared_ptr<ArrayBuffer> HybridJsonView::toBuffer() {
 }
 
 std::variant<nitro::NullType, std::shared_ptr<HybridJsonViewSpec>> HybridJsonView::getValue(const std::string& key) {
+  if (jsonViews.find(key) != jsonViews.end()) {
+    std::cout << "getValue: key is in jsonViews" << std::endl;
+    if (std::holds_alternative<std::shared_ptr<HybridJsonViewSpec>>(jsonViews[key])) {
+      return std::get<std::shared_ptr<HybridJsonViewSpec>>(jsonViews[key]);
+    }
+    return nitro::null;
+  }
   auto start = std::chrono::high_resolution_clock::now();
   doc = parser.iterate(pstr);
   auto end = std::chrono::high_resolution_clock::now();

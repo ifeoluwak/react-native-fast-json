@@ -97,9 +97,13 @@ export default function App() {
             // console.log(result?.at(2));
 
             const start2 = Date.now();
-            // console.log(result?.atPath("$.metadata.configuration")?.rawJson());
+            console.log(
+              result
+                ?.atPath('$.metadata.configuration.checksum_algo')
+                ?.rawJson()
+            );
             // console.log(result?.getValue("metadata")?.rawJson());
-            console.log(result?.atPath('$.metadata.statistics')?.rawJson());
+            // console.log(result?.getValue('metadata')?.rawJson());
             const end2 = Date.now();
             console.log('-p-p-p', end2 - start2);
             console.log('-2.2.2', end2 - start);
