@@ -11,8 +11,6 @@ namespace margelo::nitro::fastjson {
 
   std::unordered_map<std::string, JsonCacheVariants> jsonViews;
 
-  simdjson::ondemand::parser parser = simdjson::ondemand::parser();
-
   // struct JsonParseContext {
   //   simdjson::padded_string pstr;
   //   simdjson::ondemand::parser parser;
@@ -48,7 +46,7 @@ namespace margelo::nitro::fastjson {
   // static JsonParseContext& instance;
 
 HybridJsonView::HybridJsonView() : HybridObject(TAG) {
-  std::cout << "HybridJsonView constructor" << std::endl;
+  parser = simdjson::ondemand::parser();
 }
 
 std::string getJsonType(simdjson::ondemand::json_type type) {
@@ -286,8 +284,10 @@ std::string HybridJsonView::asString() {
 
 double HybridJsonView::asNumber() {
   doc = parser.iterate(pstr);
+  std::cout << "type is " << doc.type() << std::endl;
   if (doc.type() == simdjson::ondemand::json_type::number) {
-    return doc.get_number().value();
+    double val = doc.get_number().value();
+    return val;
   }
   if (doc.type() == simdjson::ondemand::json_type::string) {
     return std::stod(std::string(doc.get_string().value()));
@@ -303,6 +303,7 @@ double HybridJsonView::asNumber() {
 
 bool HybridJsonView::asBoolean() {
   doc = parser.iterate(pstr);
+  std::cout << "type is " << doc.type() << std::endl;
   if (doc.type() == simdjson::ondemand::json_type::boolean) {
     return doc.get_bool().value();
   }
