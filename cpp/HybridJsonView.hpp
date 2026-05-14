@@ -16,16 +16,15 @@ public:
   void setLength(double length) override;
 
   std::string rawJson() override;
-  std::shared_ptr<ArrayBuffer> toBuffer() override;
   std::variant<nitro::NullType, std::shared_ptr<HybridJsonViewSpec>> getValue(const std::string& key) override;
   std::vector<std::string> keys() override;
-  bool has(const std::string& key) override;
   std::variant<nitro::NullType, std::shared_ptr<HybridJsonViewSpec>> at(double index) override;
   std::variant<nitro::NullType, std::shared_ptr<HybridJsonViewSpec>> atPath(const std::string& path) override;
   std::variant<nitro::NullType, std::vector<std::string>> atPathWithWildcard(const std::string& path) override;
   std::string asString() override;
   double asNumber() override;
   bool asBoolean() override;
+  std::shared_ptr<AnyMap> asObject() override;
 
   simdjson::padded_string pstr;
   simdjson::ondemand::parser parser;

@@ -11,7 +11,9 @@ class HybridFastJson : public HybridFastJsonSpec {
 public:
   HybridFastJson();
 
-  std::shared_ptr<Promise<ParseResult>> parse(const std::variant<std::string, JsonSourceUri>& source) override;
+  std::shared_ptr<Promise<std::variant<nitro::NullType, std::shared_ptr<HybridJsonViewSpec>>>> parseString(const std::string& str) override;
+  std::shared_ptr<Promise<std::variant<nitro::NullType, std::shared_ptr<HybridJsonViewSpec>>>> parseFile(const std::string& path) override;
+  void release(const std::string& source) override;
 };
 
 } // namespace margelo::nitro::fastjson
