@@ -16,7 +16,7 @@ namespace margelo::nitro::fastjson
    * Parses a JSON string and returns a Promise that resolves to a JsonViewSpec.
    * Not ideal, prefer parseFile or use simple JSON.parse if possible.
    * @param str The JSON string.
-   * @returns A Promise that resolves to a JsonViewSpec or null. Response is cached for future calls.
+   * @returns A Promise that resolves to a JsonViewSpec or null. Not cached (unlike parseFile).
    */
   std::shared_ptr<Promise<ParseResult>> HybridFastJson::parseString(const std::string &str)
   {

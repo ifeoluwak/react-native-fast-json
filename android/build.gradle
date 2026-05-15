@@ -52,12 +52,13 @@ android {
         arguments "-DANDROID_STL=c++_shared", "-DANDROID_SUPPORT_FLEXIBLE_PAGE_SIZES=ON"
         abiFilters (*reactNativeArchitectures())
 
+        // Match iOS FastJson.podspec: fast simdjson in Debug app builds too (consumers debug JS, not this native code).
         buildTypes {
           debug {
-            cppFlags "-O1 -g"
+            cppFlags "-O3 -DNDEBUG"
           }
           release {
-            cppFlags "-O2"
+            cppFlags "-O3 -DNDEBUG"
           }
         }
       }

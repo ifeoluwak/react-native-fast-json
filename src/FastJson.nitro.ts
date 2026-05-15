@@ -69,17 +69,17 @@ export interface FastJson extends HybridObject<{
   android: 'c++';
 }> {
   /**
-   * Parses a JSON string and returns a Promise that resolves to a JsonViewSpec.
+   * Parses a JSON string and returns a Promise that resolves to a JsonView.
    * Not ideal, prefer parseFile or use simple JSON.parse if possible.
    * @param str The JSON string.
-   * @returns A Promise that resolves to a JsonViewSpec or null. Response is not cached.
+   * @returns A Promise that resolves to a JsonView or null. Response is not cached.
    */
   parseString(str: string): Promise<JsonView | null>;
   /**
-   * Parses a JSON file and returns a Promise that resolves to a JsonViewSpec.
+   * Parses a JSON file and returns a Promise that resolves to a JsonView.
    * No check is done if invalid path is provided. Error handling is left to the caller.
    * @param path The path to the JSON file.
-   * @returns A Promise that resolves to a JsonViewSpec or null. Response is cached for future calls.
+   * @returns A Promise that resolves to a JsonView or null. Response is cached for future calls.
    */
   parseFile(path: string): Promise<JsonView | null>;
   release(source: string): void;
