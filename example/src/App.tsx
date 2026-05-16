@@ -1,116 +1,159 @@
-import { Text, View, StyleSheet, Button } from 'react-native';
-import { fastJson } from 'react-native-fast-json';
+import { useState } from 'react';
+import {
+  Text,
+  View,
+  StyleSheet,
+  Button,
+  ScrollView,
+  ActivityIndicator,
+} from 'react-native';
+import { fastJson, type JsonView } from 'react-native-fast-json';
 import { rnNitroCache } from 'react-native-nitro-cache';
 
-// const jsonUrl =
-//   'https://microsoftedge.github.io/Demos/json-dummy-data/5MB-min.json';
-const largeJson100mbUrl =
-  'https://elon1.pcloud.com/cBZt3PehcZ6Emo0A7ZZZH86B5kZ2ZZhE0ZkZP5cMJZvpZMRZqpZw4ZapZxVZFQZURZO9Zv8ZwpZN8ZXFZEgZcqKiZR8rtBYhnGy7zJ01A8Hbj45tkObLy/data_100mb.json';
+const jsonUrl_250mb =
+  'https://github.com/antonmedv/json-examples/raw/refs/heads/master/data_250mb.json?download=';
 
 export default function App() {
-  // useEffect(() => {
-  //   // fastJson
-  //   //   .parse(
-  //   //     '{ "name": "John", "age": 30, "address": { "street": "123 Main St", "city": "Anytown", "state": "CA", "zip": "12345" } }'
-  //   //   )
-  //   //   .then((result) => {
-  //   //     // console.log(result?.getValue('name'));
-  //   //     console.log(result?.getValue('addressss'));
-  //   //     // console.log(result?.getValue('address')?.has('streets'));
-  //   //     console.log(result?.getValue('address')?.toJson());
-  //   //     console.log(result?.getValue('address')?.length);
-  //   //     console.log(result?.getValue('address')?.type);
-  //   //     console.log(result?.getValue('address')?.keys());
-  //   //   });
-  //   let start = performance.now();
-  //   // console.log(JSON.parse(JSON.stringify(exampleJson)));
-  //   fastJson.parse(JSON.stringify(exampleJson)).then((result) => {
-  //     // console.log(result?.getValue('items'));
-  //     let end = performance.now();
-  //     console.log(end - start);
-  //   });
-  //   // let end = performance.now();
-  //   // console.log(end - start);
-  // }, []);
+  const [jsonView, setJsonView] = useState<JsonView | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [startTime, setStartTime] = useState(0);
+  const [endTime, setEndTime] = useState(0);
+
+  const fetchJson = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch(jsonUrl_250mb);
+      if (!response.ok) {
+        throw new Error('Failed to fetch JSON file');
+      }
+      setStartTime(Date.now());
+      const data = await response.json();
+      setEndTime(Date.now());
+      console.log('data: ', data?.metadata);
+    } catch (error) {
+      console.log('error: ', error?.message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
-    <View style={styles.container}>
-      <Text>Result</Text>
+    <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
+      {loading ? (
+        <View style={styles.container}>
+          <ActivityIndicator size="large" color="#0000ff" />
+          <Text>Downloading JSON file...</Text>
+        </View>
+      ) : (
+        <View style={styles.container}>
+          <Text>Result</Text>
 
-      <Button
-        title="Download JSON to Disk"
-        onPress={() => {
-          rnNitroCache
-            .getOrFetch(largeJson100mbUrl)
-            .then((result) => {
-              console.log('Downloaded JSON to Disk: ', result);
-            })
-            .catch((error) => {
-              console.log('errored download', error);
-            });
-        }}
-      />
-      <Button
-        title="Check Cache for JSON"
-        onPress={() => {
-          rnNitroCache.getEntries().then((result) => {
-            console.log('Cache entries: ', result);
-          });
-        }}
-      />
-      <Button
-        title="Clear Cache"
-        onPress={() => {
-          rnNitroCache.clear().then((result) => {
-            console.log('Cache entries: ', result);
-          });
-        }}
-      />
+          <Button
+            title="Download JSON to Disk"
+            onPress={() => {
+              setLoading(true);
+              rnNitroCache
+                .getOrFetch(jsonUrl_250mb)
+                .then((result) => {
+                  console.log('Downloaded JSON to Disk: ', result);
+                })
+                .catch((error) => {
+                  console.log('errored download', error);
+                })
+                .finally(() => {
+                  setLoading(false);
+                });
+            }}
+          />
+          <Button
+            title="Check Cache for JSON"
+            onPress={() => {
+              rnNitroCache.getEntries().then((result) => {
+                console.log('Cache entries: ', result);
+              });
+            }}
+          />
+          <Button
+            title="Clear Cache"
+            onPress={() => {
+              rnNitroCache.clear().then((result) => {
+                console.log('Cache entries: ', result);
+              });
+            }}
+          />
 
-      <Button
-        title="JS Parse"
-        onPress={async () => {
-          // let start = Date.now();
-          // JSON.parse(JSON.stringify(exampleJson));
-          // let end = Date.now();
-          // console.log(end - start);
-        }}
-      />
+          <Button
+            title="JS Parse"
+            onPress={async () => {
+              fetchJson();
+            }}
+          />
 
-      <Button
-        title="FastJSON Parse"
-        onPress={async () => {
-          const filePath = await rnNitroCache.get(largeJson100mbUrl);
-          // console.log('filePath: ', filePath);
-          const start = Date.now();
-          fastJson.parse({ uri: filePath?.url ?? '' }).then((result) => {
-            // let end = Date.now();
-            // console.log(end - start);
-            // console.log(result?.atPathWithWildcard('$.events[*].subTopicIds'));
-            // console.log(
-            //   result?.atPathWithWildcard('$.performances[0].prices[0]')
-            // );
-            // console.log(result?.getValue('metadata')?.rawJson());
-            // console.log(result);
-            const end = Date.now();
-            console.log(end - start);
-            // console.log(result?.at(2));
+          <Button
+            title="FastJSON Parse"
+            onPress={async () => {
+              const filePath = await rnNitroCache.get(jsonUrl_250mb);
+              // console.log('filePath: ', filePath);
+              setStartTime(Date.now());
+              fastJson.parseFile(filePath?.url ?? '').then((result) => {
+                setEndTime(Date.now());
+                setJsonView(result?.getValue('metadata') ?? null);
+              });
+            }}
+          />
+          <Button
+            title="FastJSON Parse string"
+            onPress={async () => {
+              setStartTime(Date.now());
+              fastJson
+                .parseString(
+                  '{"squadName":"Super hero squad","homeTown":"Metro City","formed":2016,"secretBase":"Super tower","active":true,"members":[{"name":"Molecule Man","age":29,"secretIdentity":"Dan Jukes","powers":["Radiation resistance","Turning tiny","Radiation blast"]},{"name":"Madame Uppercut","age":39,"secretIdentity":"Jane Wilson","powers":["Million tonne punch","Damage resistance","Superhuman reflexes"]},{"name":"Eternal Flame","age":1000000,"secretIdentity":"Unknown","powers":["Immortality","Heat Immunity","Inferno","Teleportation","Interdimensional travel"]}]}'
+                )
+                .then((result) => {
+                  setEndTime(Date.now());
+                  console.log('result: ', result?.keys());
+                });
+            }}
+          />
 
-            const start2 = Date.now();
-            console.log(
-              result
-                ?.atPath('$.metadata.configuration.checksum_algo')
-                ?.rawJson()
-            );
-            // console.log(result?.getValue("metadata")?.rawJson());
-            // console.log(result?.getValue('metadata')?.rawJson());
-            const end2 = Date.now();
-            console.log('-p-p-p', end2 - start2);
-            console.log('-2.2.2', end2 - start);
-          });
-        }}
-      />
-    </View>
+          <Button
+            title="Release All"
+            onPress={async () => {
+              const filePath = await rnNitroCache.get(jsonUrl_250mb);
+              fastJson.release(filePath?.url ?? '');
+            }}
+          />
+
+          <Button
+            title="Metadata"
+            onPress={async () => {
+              let ans = jsonView?.atPath('$.statistics')?.asObject();
+              console.log('ans: ', ans);
+            }}
+          />
+          <Button
+            title="Users"
+            onPress={async () => {
+              let ans = jsonView?.getValue('version')?.type;
+              console.log('users: ', ans);
+            }}
+          />
+
+          <View>
+            <Text>Time taken to parse: {endTime - startTime}ms</Text>
+            {/* <Text>{jsonView?.type}</Text>
+            <Text>{jsonView?.keys().join(', ')}</Text> */}
+            {/* <Text>{jsonView?.keys().join(', ')}</Text> */}
+            {/* <Text>{jsonView?.type}</Text>
+          <Text>{jsonView?.length}</Text>
+          <Text>{jsonView?.asString()}</Text>
+          <Text>{jsonView?.asNumber()}</Text>
+          <Text>{jsonView?.asBoolean()}</Text> */}
+            {/* <Text>{jsonView?.atPath('$.configuration')?.rawJson()}</Text> */}
+          </View>
+        </View>
+      )}
+    </ScrollView>
   );
 }
 
@@ -119,5 +162,6 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
+    gap: 10,
   },
 });

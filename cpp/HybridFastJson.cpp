@@ -39,7 +39,6 @@ namespace margelo::nitro::fastjson
   {
     if (jsonStrings.find(path) != jsonStrings.end())
     {
-      std::cout << "jsonStrings: uri is in jsonStrings" << std::endl;
       return Promise<ParseResult>::resolved(ParseResult{jsonStrings[path]});
     }
 

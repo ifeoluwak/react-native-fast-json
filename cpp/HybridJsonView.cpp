@@ -46,7 +46,6 @@ void HybridJsonView::setLength(double length) {
 std::string HybridJsonView::rawJson() {
   std::string rawJsonKey = std::string(pstr).substr(0, 10) + "_rawJson";
   if (jsonViews.find(rawJsonKey) != jsonViews.end()) {
-    std::cout << "rawJson: pstr is in jsonViews" << std::endl;
     return std::get<std::string>(jsonViews[rawJsonKey]);
   }
   doc = parser.iterate(pstr);
@@ -58,16 +57,12 @@ std::string HybridJsonView::rawJson() {
 std::variant<nitro::NullType, std::shared_ptr<HybridJsonViewSpec>> HybridJsonView::getValue(const std::string& key) {
   std::string getValueKey = key + "_getValue";
   if (jsonViews.find(getValueKey) != jsonViews.end()) {
-    std::cout << "getValue: key is in jsonViews" << std::endl;
     if (std::holds_alternative<std::shared_ptr<HybridJsonViewSpec>>(jsonViews[getValueKey])) {
       return std::get<std::shared_ptr<HybridJsonViewSpec>>(jsonViews[getValueKey]);
     }
     return nitro::null;
   }
-  auto start = std::chrono::high_resolution_clock::now();
   doc = parser.iterate(pstr);
-  auto end = std::chrono::high_resolution_clock::now();
-  std::cout << "getValue took " << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << " milliseconds" << std::endl;
   
   auto value = doc[key];
   if (value.error() || value.is_null()) {
@@ -120,7 +115,6 @@ std::variant<nitro::NullType, std::shared_ptr<HybridJsonViewSpec>> HybridJsonVie
   // this should give us a unique key for the at method
   std::string atKey = std::string(pstr).substr(0, 10) + std::to_string(index) + "_at";
   if (jsonViews.find(atKey) != jsonViews.end()) {
-    std::cout << "at: key is in jsonViews" << std::endl;
     if (std::holds_alternative<std::shared_ptr<HybridJsonViewSpec>>(jsonViews[atKey])) {
       return std::get<std::shared_ptr<HybridJsonViewSpec>>(jsonViews[atKey]);
     }
@@ -148,7 +142,6 @@ std::variant<nitro::NullType, std::shared_ptr<HybridJsonViewSpec>> HybridJsonVie
 std::variant<nitro::NullType, std::shared_ptr<HybridJsonViewSpec>> HybridJsonView::atPath(const std::string& path) {
   std::string atPathKey = path + "_atPath";
   if (jsonViews.find(atPathKey) != jsonViews.end()) {
-    std::cout << "path is in jsonViews" << std::endl;
     if (std::holds_alternative<std::shared_ptr<HybridJsonViewSpec>>(jsonViews[atPathKey])) {
       return std::get<std::shared_ptr<HybridJsonViewSpec>>(jsonViews[atPathKey]);
     }
@@ -179,7 +172,6 @@ std::variant<nitro::NullType, std::shared_ptr<HybridJsonViewSpec>> HybridJsonVie
 std::variant<nitro::NullType, std::vector<std::string>> HybridJsonView::atPathWithWildcard(const std::string& path) {
   std::string atPathWithWildcardKey = path + "_atPathWithWildcard";
   if (jsonViews.find(atPathWithWildcardKey) != jsonViews.end()) {
-    std::cout << "atPathWithWildcard: path is in jsonViews" << std::endl;
     if (std::holds_alternative<std::vector<std::string>>(jsonViews[atPathWithWildcardKey])) {
       return std::get<std::vector<std::string>>(jsonViews[atPathWithWildcardKey]);
     }
@@ -196,38 +188,29 @@ std::variant<nitro::NullType, std::vector<std::string>> HybridJsonView::atPathWi
   std::vector<std::string> arrayData;
   for (const auto& key : value.value()) {
     auto typex = key.type();
-    std::cout << "type is " << typex << std::endl;
     switch (key.type()) {
       case simdjson::dom::element_type::OBJECT:
-      std::cout << "object: " << std::endl;
       arrayData.push_back(simdjson::to_string(key.get_object().value()));
 
       break;
       case simdjson::dom::element_type::ARRAY:
-      std::cout << "array: " << std::endl;
       for (const auto& obj : key.get_array()) {
-        std::cout << "obj: " << obj << std::endl;
         arrayData.push_back(simdjson::to_string(obj));
       }
       break;
       case simdjson::dom::element_type::STRING:
-      std::cout << "string: " << std::string(key.get_string().value()) << std::endl;
       arrayData.push_back(simdjson::to_string(key));
       break;
       case simdjson::dom::element_type::INT64:
-      std::cout << "number: " << key.get_int64().value() << std::endl;
       arrayData.push_back(std::to_string(key.get_int64()));
       break;
       case simdjson::dom::element_type::UINT64:
-      std::cout << "number: " << key.get_uint64().value() << std::endl;
       arrayData.push_back(std::to_string(key.get_uint64()));
       break;
       case simdjson::dom::element_type::DOUBLE:
-      std::cout << "number: " << key.get_double().value() << std::endl;
       arrayData.push_back(std::to_string(key.get_double()));
       break;
       case simdjson::dom::element_type::BOOL:
-      std::cout << "boolean: " << key.get_bool().value() << std::endl;
       arrayData.push_back(std::to_string(key.get_bool()));
       break;
       default:
@@ -244,7 +227,6 @@ std::string HybridJsonView::asString() {
   // this should give us a unique key for the asString method
   std::string asStringKey = std::string(pstr).substr(0, 10) + "_asString";
   if (jsonViews.find(asStringKey) != jsonViews.end()) {
-    std::cout << "asString: pstr is in jsonViews" << std::endl;
     if (std::holds_alternative<std::string>(jsonViews[asStringKey])) {
       return std::get<std::string>(jsonViews[asStringKey]);
     }
@@ -267,14 +249,12 @@ std::string HybridJsonView::asString() {
 double HybridJsonView::asNumber() {
   std::string asNumberKey = std::string(pstr).substr(0, 10) + "_asNumber";
   if (jsonViews.find(asNumberKey) != jsonViews.end()) {
-    std::cout << "asNumber: pstr is in jsonViews" << std::endl;
     if (std::holds_alternative<double>(jsonViews[asNumberKey])) {
       return std::get<double>(jsonViews[asNumberKey]);
     }
     return 0;
   }
   doc = parser.iterate(pstr);
-  std::cout << "type is " << doc.type() << std::endl;
   if (doc.type() == simdjson::ondemand::json_type::number) {
     double val = doc.get_double().value();
     jsonViews[asNumberKey] = val;
@@ -300,7 +280,6 @@ double HybridJsonView::asNumber() {
 
 bool HybridJsonView::asBoolean() {
   doc = parser.iterate(pstr);
-  std::cout << "type is " << doc.type() << std::endl;
   if (doc.type() == simdjson::ondemand::json_type::boolean) {
     return doc.get_bool().value();
   }
@@ -318,7 +297,6 @@ AnyValue materializeValue(simdjson::ondemand::value& value) {
   std::unordered_map<std::string, AnyValue> objectData;
   std::string str;
   std::vector<AnyValue> arrayData;
-  std::cout << value.type() << std::endl;
   switch (value.type()) {
     case simdjson::ondemand::json_type::object:
       for (auto it : value.get_object()) {
@@ -351,7 +329,6 @@ AnyValue materializeValue(simdjson::ondemand::value& value) {
 std::shared_ptr<AnyMap> HybridJsonView::asObject() {
   std::string asObjectKey = std::string(pstr).substr(0, 10) + "_asObject";
   if (jsonViews.find(asObjectKey) != jsonViews.end()) {
-    std::cout << "asObject: pstr is in jsonViews" << std::endl;
     if (std::holds_alternative<std::shared_ptr<AnyMap>>(jsonViews[asObjectKey])) {
       return std::get<std::shared_ptr<AnyMap>>(jsonViews[asObjectKey]);
     }
