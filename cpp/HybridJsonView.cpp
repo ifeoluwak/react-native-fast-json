@@ -127,13 +127,19 @@ std::variant<nitro::NullType, std::shared_ptr<HybridJsonViewSpec>> HybridJsonVie
       jsonViews[atKey] = nitro::null;
       return nitro::null;
     }
-    std::shared_ptr<HybridJsonView> view = std::make_shared<HybridJsonView>();
-    view->_length = value.count_elements();
-    view->pstr = std::move(value.raw_json().value());
-    view->_type = "array";
-    std::shared_ptr<HybridJsonViewSpec> asSpec = view; 
-    jsonViews[atKey] = asSpec;
-    return std::move(asSpec);
+      std::shared_ptr<HybridJsonView> view = std::make_shared<HybridJsonView>();
+      if (value.type() == simdjson::ondemand::json_type::array) {
+        view->_length = value.count_elements();
+        view->_type = "array";
+      }
+      if (value.type() == simdjson::ondemand::json_type::object) {
+        view->_length = value.count_fields();
+        view->_type = "object";
+      }
+      view->pstr = std::move(value.raw_json().value());
+      std::shared_ptr<HybridJsonViewSpec> asSpec = view; 
+      jsonViews[atKey] = asSpec;
+      return std::move(asSpec);
   }
   jsonViews[atKey] = nitro::null;
   return nitro::null;
