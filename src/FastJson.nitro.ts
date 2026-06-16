@@ -28,6 +28,11 @@ export interface JsonView extends HybridObject<{
    */
   at(index: number): JsonView | null;
   /**
+   * Only for arrays. Returns the next value in the array.
+   * @returns The next value in the array.
+   */
+  next(): JsonView | null;
+  /**
    * Returns all the values of the path specified.
    * @param path simple path e.g $.key1.key2.key3. Indexing is not supported.
    * @returns Returns a JsonView.

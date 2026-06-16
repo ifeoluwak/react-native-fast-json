@@ -21,6 +21,8 @@ public:
   std::variant<nitro::NullType, std::shared_ptr<HybridJsonViewSpec>> at(double index) override;
   std::variant<nitro::NullType, std::shared_ptr<HybridJsonViewSpec>> atPath(const std::string& path) override;
   std::variant<nitro::NullType, std::vector<std::string>> atPathWithWildcard(const std::string& path) override;
+  std::variant<nitro::NullType, std::shared_ptr<HybridJsonViewSpec>> next() override;
+
   std::string asString() override;
   double asNumber() override;
   bool asBoolean() override;
@@ -30,6 +32,9 @@ public:
   simdjson::ondemand::parser parser;
   simdjson::ondemand::document doc;
   simdjson::ondemand::object obj;
+
+  simdjson::ondemand::array_iterator arrayIterator;
+  bool hasArrayIterateStarted = false;
 
 private:
   std::string _type;

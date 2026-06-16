@@ -8,6 +8,18 @@
 namespace margelo::nitro::fastjson
 {
 
+  std::string getJsonType(simdjson::ondemand::json_type type) {
+    switch (type) {
+      case simdjson::ondemand::json_type::object:  return "object";
+      case simdjson::ondemand::json_type::array:   return "array";
+      case simdjson::ondemand::json_type::string:   return "string";
+      case simdjson::ondemand::json_type::number:   return "number";
+      case simdjson::ondemand::json_type::boolean: return "boolean";
+      case simdjson::ondemand::json_type::null:     return "null";
+      default:                                      return "string"; // default to string
+    }
+  }
+
   std::unordered_map<std::string, std::shared_ptr<HybridJsonViewSpec>> jsonStrings;
 
   HybridFastJson::HybridFastJson() : HybridObject(TAG) {}
@@ -46,12 +58,19 @@ namespace margelo::nitro::fastjson
     view->pstr = simdjson::padded_string::load(path);
 
     std::shared_ptr<HybridJsonViewSpec> asSpec = view;
+    view->doc = view->parser.iterate(view->pstr);
+    view->setType(getJsonType(view->doc.type()));
+    if (view->getType() == "array") {
+      view->setLength(view->doc.count_elements());
+    }
+    if (view->getType() == "object") {
+      view->setLength(view->doc.count_fields());
+    }
 
     jsonStrings[path] = asSpec;
 
     return Promise<ParseResult>::resolved(ParseResult{asSpec});
   }
-
 
   void HybridFastJson::release(const std::string &source)
   {

@@ -31,7 +31,7 @@ export default function App() {
       setEndTime(Date.now());
       console.log('data: ', data?.metadata);
     } catch (error) {
-      console.log('error: ', error?.message);
+      console.log('error: ', error);
     } finally {
       setLoading(false);
     }

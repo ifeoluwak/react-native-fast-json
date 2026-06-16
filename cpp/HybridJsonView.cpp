@@ -128,13 +128,13 @@ std::variant<nitro::NullType, std::shared_ptr<HybridJsonViewSpec>> HybridJsonVie
       return nitro::null;
     }
       std::shared_ptr<HybridJsonView> view = std::make_shared<HybridJsonView>();
-      if (value.type() == simdjson::ondemand::json_type::array) {
+      auto type = getJsonType(value.type());
+      view->_type = type;
+      if (type == "array") {
         view->_length = value.count_elements();
-        view->_type = "array";
       }
-      if (value.type() == simdjson::ondemand::json_type::object) {
+      if (type == "object") {
         view->_length = value.count_fields();
-        view->_type = "object";
       }
       view->pstr = std::move(value.raw_json().value());
       std::shared_ptr<HybridJsonViewSpec> asSpec = view; 
@@ -174,6 +174,42 @@ std::variant<nitro::NullType, std::shared_ptr<HybridJsonViewSpec>> HybridJsonVie
   jsonViews[atPathKey] = asSpec;
   return asSpec;
 };
+
+std::variant<nitro::NullType, std::shared_ptr<HybridJsonViewSpec>> HybridJsonView::next() {
+  if (!hasArrayIterateStarted) {
+    doc = parser.iterate(pstr);
+    if (doc.type() != simdjson::ondemand::json_type::array) {
+      return nitro::null;
+    }
+    auto err = doc.begin().get(arrayIterator);
+    if (err) {
+      return nitro::null;
+    }
+    hasArrayIterateStarted = true;
+  }
+  if (arrayIterator.at_end()) {
+    return nitro::null;
+  }  
+  auto value = *arrayIterator;
+    if (value.error() || value.is_null()) {
+      ++arrayIterator;
+      return nitro::null;
+    }
+    auto json_value = value.value();
+
+    std::shared_ptr<HybridJsonView> view = std::make_shared<HybridJsonView>();
+    view->pstr = json_value.raw_json().value();
+    view->_type = getJsonType(json_value.type());
+    if (view->_type == "object") {
+      view->_length = json_value.count_fields();
+    }
+    if (view->_type == "array") {
+      view->_length = json_value.count_elements();
+    }
+    std::shared_ptr<HybridJsonViewSpec> asSpec = view; 
+    ++arrayIterator;
+    return asSpec;
+}
 
 std::variant<nitro::NullType, std::vector<std::string>> HybridJsonView::atPathWithWildcard(const std::string& path) {
   std::string atPathWithWildcardKey = path + "_atPathWithWildcard";
