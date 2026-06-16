@@ -70,7 +70,8 @@ Navigate and read values without building a full JS tree up front:
 |-------------------|--------|
 | `getValue(key)` | Single object key (not a path). Returns `JsonView \| null`. |
 | `keys()` | Keys for objects / arrays (as applicable). |
-| `at(index)` | Array element by index. |
+| `at(index)` | Array element by index (random access). |
+| `next()` | Next array element in order (sequential iteration). Returns `null` at end. |
 | `atPath('$.a.b.c')` | Simple dotted path from `$` (no `[index]` in path). |
 | `atPathWithWildcard('$.items[*].id')` | Wildcard / index segments; returns `string[] \| null`. |
 | `type`, `length` | Value kind and length (objects/arrays). |
@@ -85,6 +86,35 @@ const meta = root.getValue('metadata');
 const version = meta?.getValue('version')?.asString();
 ```
 
+### Iterating large arrays with `next()`
+
+For a root that is a JSON **array** (for example a catalog of records), prefer **`next()`** over **`at(i)` in a loop**. Each `at(i)` re-walks the array from the start, so a loop becomes roughly **O(n²)**. **`next()`** walks the array **once** in native code (**O(n)**).
+
+`next()` only works on `JsonView` that is of type array.
+
+```ts
+const root = await fastJson.parseFile('/path/to/items.json');
+if (!root) return;
+
+const names: string[] = [];
+let item = root.next();
+while (item) {
+  const name = item.getValue('name')?.asString();
+  if (name) names.push(name);
+  item = root.next(); // advance on the same array root
+}
+
+fastJson.release('/path/to/items.json');
+```
+
+**Rules while iterating with `next()`:**
+
+- Do **not** call `at()`, `getValue()`, `atPath()`, or other methods on the **same root** mid-loop—they re-parse the document and invalidate the internal iterator.
+- **`next()`** returns `null` when there are no more elements; no reset is required unless you add your own re-walk logic.
+- Use **`getValue(key)`** on each **child** view to read fields (for example `item.getValue('artist')?.asString()`). **`asString()`** on the child itself only works when that element is a JSON string.
+
+For **one-off** access by index, **`at(index)`** is still fine. For **many elements**, use **`next()`** or **`atPathWithWildcard`** when you need the same field from every item.
+
 ## Memory and caching
 
 ### How big is “big”?
@@ -98,11 +128,11 @@ Native memory for a parse is dominated by the **root buffer**, which is roughly 
 | **~50–200 MB** | High impact on device RAM and OOM risk if you stack parses or retain roots in global state. Plan **`release(path)`** and avoid `rawJson` / `asObject` on the whole document. |
 | **200 MB+** | Same as above, but stricter: **short-lived root**, extract what you need, then drop handles immediately (see below). |
 
-These are ballparks—actual pressure depends on device, OS, and what else your app keeps in JavaScript memory versus native (C++) memory.
+These are ballparks, actual pressure depends on device, OS, and what else your app keeps in JavaScript memory versus native (C++) memory.
 
 ### Prefer a short-lived root: read what you need, then discard
 
-**Do not** keep the root `JsonView` in React state, context, or a singleton for the whole app lifetime unless you truly need random access to that document for a long time.
+Prefer not keeping a large root `JsonView` in React state, context, or a singleton for the whole app lifetime unless you truly need random access to that document for a long time.
 
 A safer pattern for large files:
 
@@ -125,7 +155,7 @@ async function loadConfig(path: string) {
 }
 ```
 
-That way you pay the large native buffer only while you extract fields—not for the entire time the user has the app open.
+That way you pay the large native buffer only while you extract fields, not for the entire time the user has the app open.
 
 If you **do** need the root for a while (e.g. a deep drill-down UI over the same file), keep **one** root per path, avoid overlapping second parses of the same huge file, and still **`release`** when the user leaves the flow.
 
@@ -134,10 +164,11 @@ If you **do** need the root for a while (e.g. a deep drill-down UI over the same
 - **Root `JsonView`** holds the **full parsed buffer** in native memory (file size + padding for `parseFile`, string size for `parseString`).
 - **`parseFile(path)`** caches the native view **by path string**. Repeated `parseFile` with the same path returns the same cached root until **`release(path)`** removes it.
 - **`parseString`** does **not** use that path cache; each call allocates a new native view for that string (until the JS side drops the `JsonView`).
-- **`getValue` / `at` / paths** may create **child** views that copy JSON slices into their own buffers. Holding many large subtrees can add up.
+- **`getValue` / `at` / `next` / paths** may create **child** views that copy JSON slices into their own buffers. Holding many large subtrees can add up.
+- Prefer **`next()`** over repeated **`at(i)`** when scanning most of an array, fewer native re-scans and less CPU.
 - **`rawJson()`** and **`asObject()`** on very large values can allocate **large** extra memory (strings / maps). Use sparingly on big documents.
 
-If you only need a subtree in JavaScript, you can still hold just that subtree—but while **`parseFile`** keeps the root in the path cache, the **full file buffer** stays in native memory until you **`release`** that path (and nothing else retains the view).
+If you only need a subtree in JavaScript, you can still hold just that subtree, but while **`parseFile`** keeps the root in the path cache, the **full file buffer** stays in native memory until you **`release`** that path (and nothing else retains the view).
 
 ## API summary
 

@@ -1,6 +1,6 @@
 {
   "name": "react-native-fast-json",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "Fast JSON parsing for large files in React Native, powered by simdjson (C++ SIMD acceleration) via Nitro Modules",
   "main": "./lib/module/index.js",
   "types": "./lib/typescript/src/index.d.ts",

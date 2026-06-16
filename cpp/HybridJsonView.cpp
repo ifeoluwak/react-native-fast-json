@@ -229,7 +229,6 @@ std::variant<nitro::NullType, std::vector<std::string>> HybridJsonView::atPathWi
   std::unordered_map<std::string, std::string> objectData;
   std::vector<std::string> arrayData;
   for (const auto& key : value.value()) {
-    auto typex = key.type();
     switch (key.type()) {
       case simdjson::dom::element_type::OBJECT:
       arrayData.push_back(simdjson::to_string(key.get_object().value()));
