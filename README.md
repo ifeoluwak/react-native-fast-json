@@ -6,7 +6,7 @@
 - The screen **freezes or stutters**  
 - Memory use jumps; in bad cases the app is **killed for using too much memory**  
 
-**This library** parses in **native** code with [simdjson](https://github.com/simdjson/simdjson) and exposes a **`JsonView`** through [Nitro Modules](https://nitro.margelo.com/)—you read the document **lazily** from native memory instead of inflating everything into one giant JavaScript tree up front.
+**This library** parses in **native** code with [simdjson](https://github.com/simdjson/simdjson) and exposes a **`JsonView`** through [Nitro Modules](https://nitro.margelo.com/). You read the document **lazily** from native memory instead of inflating everything into one giant JavaScript tree up front.
 
 **Rough illustration** for a **~250 MB** file (device and JSON shape will change this):
 
@@ -16,7 +16,7 @@
 | **CPU** | Long spikes (often **>100%** in system monitors) | **Calmer** during native load/parse |
 | **Memory (ballpark)** | **~1.2 GB** in a heavy case | **~400 MB** (the file still has to live somewhere) |
 
-These numbers are **illustrative only**—measure your own file on real hardware before you budget.
+These numbers are **illustrative only**. Measure your own file on real hardware before you budget.
 
 ## When to use it
 
@@ -88,7 +88,7 @@ const version = meta?.getValue('version')?.asString();
 
 ### Iterating large arrays with `next()`
 
-For a root that is a JSON **array** (for example a catalog of records), prefer **`next()`** over **`at(i)` in a loop**. Each `at(i)` re-walks the array from the start, so a loop becomes roughly **O(n²)**. **`next()`** walks the array **once** in native code (**O(n)**).
+For a JSONView that is an **array** (for example a catalog of records), prefer **`next()`** over **`at(i)` in a loop**. Each `at(i)` re-walks the array from the start, so a loop becomes roughly **O(n²)**. **`next()`** walks the array **once** in native code (**O(n)**).
 
 `next()` only works on `JsonView` that is of type array.
 
@@ -109,7 +109,7 @@ fastJson.release('/path/to/items.json');
 
 **Rules while iterating with `next()`:**
 
-- Do **not** call `at()`, `getValue()`, `atPath()`, or other methods on the **same root** mid-loop—they re-parse the document and invalidate the internal iterator.
+- Do **not** call `at()`, `getValue()`, `atPath()`, or other methods on the **same root** mid-loop, they re-parse the document and invalidate the internal iterator.
 - **`next()`** returns `null` when there are no more elements; no reset is required unless you add your own re-walk logic.
 - Use **`getValue(key)`** on each **child** view to read fields (for example `item.getValue('artist')?.asString()`). **`asString()`** on the child itself only works when that element is a JSON string.
 
